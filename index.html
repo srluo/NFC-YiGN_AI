@@ -42,55 +42,78 @@
     button:hover {
       background: #373777;
     }
+    input {
+      width:80%;
+      padding:0.5rem;
+      border-radius:6px;
+      border:1px solid #aaa;
+    }
   </style>
 </head>
 <body>
   <header>🔮 NFC 易經占卜 Demo</header>
 
-  <p>請感應 NFC 卡或輸入問題後開始占卜：</p>
-  <input type="text" id="question" placeholder="輸入你的問題，例如：我是否該換工作？" style="width:80%;padding:0.5rem;border-radius:6px;border:1px solid #aaa;" />
+  <p>請輸入你的問題，然後按下開始占卜：</p>
+  <input type="text" id="question" placeholder="輸入你的問題，例如：我是否該換工作？" />
   <br><br>
-  <button onclick="startDivination()">開始占卜</button>
+  <button onclick="onClickStart()">開始占卜</button>
 
   <div id="loading" class="loading" style="display:none;">⏳ AI 正在解卦中...</div>
   <div id="output" class="result" style="display:none;"></div>
 
   <script>
-    async function startDivination() {
-      const question = document.getElementById("question").value || "我是否該展開新事業？";
+    const apiUrl = "https://script.google.com/macros/s/AKfycbxapXdlUmj_YS3UHZcBqdQ6_BDkmHiZtqQ7P9ZjYsOdj5jAvZj4SjNNV7k58_mf0xAe/exec"; // ⚠️換成你的 GAS API URL
+    let token = "";
 
-      // ⚠️ 替換成你部署的 Google Apps Script API URL
-      const apiUrl = "https://script.google.com/macros/s/AKfycbxapXdlUmj_YS3UHZcBqdQ6_BDkmHiZtqQ7P9ZjYsOdj5jAvZj4SjNNV7k58_mf0xAe/exec";
-
-      // 範例：這裡可以從 NFC Token / UID 解析出卦象與爻辭
-      const params = new URLSearchParams({
-        q: question,
-        gua: "第32卦 恆卦",
-        yao: "動三爻",
-        guaci: "恆，亨，無咎，利貞。",
-        yaoci: "恆其德，貞，婦人吉，夫子凶。"
-      });
-
+    async function startDivination(question) {
       document.getElementById("loading").style.display = "block";
       document.getElementById("output").style.display = "none";
 
       try {
-        const res = await fetch(`${apiUrl}?${params.toString()}`);
+        const res = await fetch(`${apiUrl}?d=${encodeURIComponent(token)}&q=${encodeURIComponent(question)}`);
         const data = await res.json();
 
         document.getElementById("loading").style.display = "none";
         document.getElementById("output").style.display = "block";
+
+        if (data.error) {
+          document.getElementById("output").innerHTML = `<p style="color:red;">⚠️ ${data.error}</p>`;
+          return;
+        }
+
         document.getElementById("output").innerHTML = `
-          <h3>📜 卦象：${data.gua}（${data.yao}）</h3>
-          <p><b>卦辭：</b>${data.gua}</p>
-          <p><b>爻辭：</b>${data.yao}</p>
-          <hr>
-          <h3>🔮 AI 解卦結果</h3>
+          <h3>📌 問題：</h3>
+          <p>${data.question}</p>
+
+          <h3>🔮 卦象：</h3>
+          <p>第 ${data.gua.g} 卦 - ${data.gua.name}</p>
+          <p><b>卦辭：</b>${data.gua.guaci}</p>
+          <p><b>${data.gua.yao}：</b>${data.gua.yaoci}</p>
+
+          <h3>✨ AI 解卦：</h3>
           <p>${data.result}</p>
         `;
       } catch (err) {
         document.getElementById("loading").style.display = "none";
         alert("⚠️ 占卜 API 呼叫失敗，請檢查 API URL 或網路。");
+      }
+    }
+
+    function onClickStart() {
+      const question = document.getElementById("question").value || "我是否該展開新事業？";
+      if (!token) {
+        alert("⚠️ 缺少 Token，請確認是否由 NFC 進入本頁");
+        return;
+      }
+      startDivination(question);
+    }
+
+    // ⚡ 從 URL 讀取 Token（感應 NFC 卡會帶 ?d=xxx）
+    window.onload = function() {
+      const params = new URLSearchParams(window.location.search);
+      token = params.get("d") || "";
+      if (!token) {
+        alert("⚠️ 未偵測到 Token，請確認是否由 NFC 感應進入。");
       }
     }
   </script>
