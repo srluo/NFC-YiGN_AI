@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NFC 易經占卜</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: #f7f9fc;
+      color: #333;
+      text-align: center;
+      padding: 2rem;
+    }
+    header {
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+      color: #4a4a9f;
+      font-weight: bold;
+    }
+    .result {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    .loading {
+      margin-top: 1rem;
+      color: #999;
+    }
+    button {
+      background: #4a4a9f;
+      color: #fff;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #373777;
+    }
+  </style>
+</head>
+<body>
+  <header>🔮 NFC 易經占卜 Demo</header>
+
+  <p>請感應 NFC 卡或輸入問題後開始占卜：</p>
+  <input type="text" id="question" placeholder="輸入你的問題，例如：我是否該換工作？" style="width:80%;padding:0.5rem;border-radius:6px;border:1px solid #aaa;" />
+  <br><br>
+  <button onclick="startDivination()">開始占卜</button>
+
+  <div id="loading" class="loading" style="display:none;">⏳ AI 正在解卦中...</div>
+  <div id="output" class="result" style="display:none;"></div>
+
+  <script>
+    async function startDivination() {
+      const question = document.getElementById("question").value || "我是否該展開新事業？";
+
+      // ⚠️ 替換成你部署的 Google Apps Script API URL
+      const apiUrl = "https://script.google.com/macros/s/AKfycbzSrNDLuIflJ9XxwIriAxmx2V2X8-XjWIGcEqDHZ8DP_H8Sqimk9XZTqjDpbJLj3mXB/exec";
+
+      // 範例：這裡可以從 NFC Token / UID 解析出卦象與爻辭
+      const params = new URLSearchParams({
+        q: question,
+        gua: "第32卦 恆卦",
+        yao: "動三爻",
+        guaci: "恆，亨，無咎，利貞。",
+        yaoci: "恆其德，貞，婦人吉，夫子凶。"
+      });
+
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("output").style.display = "none";
+
+      try {
+        const res = await fetch(`${apiUrl}?${params.toString()}`);
+        const data = await res.json();
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("output").style.display = "block";
+        document.getElementById("output").innerHTML = `
+          <h3>📜 卦象：${data.gua}（${data.yao}）</h3>
+          <p><b>卦辭：</b>${data.gua}</p>
+          <p><b>爻辭：</b>${data.yao}</p>
+          <hr>
+          <h3>🔮 AI 解卦結果</h3>
+          <p>${data.result}</p>
+        `;
+      } catch (err) {
+        document.getElementById("loading").style.display = "none";
+        alert("⚠️ 占卜 API 呼叫失敗，請檢查 API URL 或網路。");
+      }
+    }
+  </script>
+</body>
+</html>
