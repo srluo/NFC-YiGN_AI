@@ -27,22 +27,23 @@
       text-align: left;
     }
     .loading {
-      margin-top: 1rem;
-      color: #999;
+      margin-top: 1.5rem;
+      display: none;
+      text-align: center;
+      color: #666;
     }
-    .token-status {
-      margin-top: 1rem;
-      padding: 0.8rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
+    .spinner {
+      margin: 0 auto 0.5rem auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #4a4a9f;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
     }
-    .token-ok {
-      background: #e6f7e6;
-      color: #228b22;
-    }
-    .token-error {
-      background: #ffecec;
-      color: #cc0000;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
     button {
       background: #4a4a9f;
@@ -56,94 +57,105 @@
     button:hover {
       background: #373777;
     }
-    input {
-      width:80%;
-      padding:0.5rem;
-      border-radius:6px;
-      border:1px solid #aaa;
+    .typing {
+      white-space: pre-wrap;
+      line-height: 1.6;
     }
   </style>
 </head>
 <body>
   <header>🔮 NFC 易經占卜 Demo</header>
 
-  <p>請輸入你的問題，然後按下開始占卜：</p>
-  <input type="text" id="question" placeholder="輸入你的問題，例如：我是否該換工作？" />
+  <p>請感應 NFC 卡後，輸入問題再開始占卜：</p>
+  <input type="text" id="question" placeholder="例如：我是否該換工作？" 
+         style="width:80%;padding:0.5rem;border-radius:6px;border:1px solid #aaa;" />
   <br><br>
-  <button onclick="onClickStart()">開始占卜</button>
+  <button onclick="startDivination()">開始占卜</button>
 
-  <div id="tokenStatus" class="token-status"></div>
-  <div id="loading" class="loading" style="display:none;">⏳ AI 正在解卦中...</div>
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <div>⏳ AI 正在解卦中...</div>
+  </div>
   <div id="output" class="result" style="display:none;"></div>
 
-  <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbzAw5h60gMTe5Cja77NbLQkG001cQEEUhN_CESWWjCh4Ic10KBGb_E3GvVnnjcD8shZ/exec"; // ⚠️換成你的 GAS API URL
-    let token = "";
+  <!-- 音效 -->
+  <audio id="chimeSound" src="https://cdn.pixabay.com/download/audio/2021/09/15/audio_bell-6093.mp3?filename=magic-chime-6093.mp3" preload="auto"></audio>
 
-    // ✅ Token 格式驗證 (UID-TF-TS-RANDOM)
-    function validateToken(t) {
-      const regex = /^[0-9A-F]{14}[A-F0-9]{2}[0-9A-F]{8}[0-9A-F]{8,}$/i;
-      return regex.test(t);
+  <script>
+    // ⚡ 監聽 Enter 鍵
+    document.getElementById("question").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        startDivination();
+      }
+    });
+
+    // 打字機效果函數
+    function typeWriter(text, element, callback, speed = 40) {
+      let i = 0;
+      element.innerHTML = "";
+      function typing() {
+        if (i < text.length) {
+          element.innerHTML += text.charAt(i);
+          i++;
+          setTimeout(typing, speed);
+        } else {
+          if (callback) callback(); // 打字完成後呼叫 callback
+        }
+      }
+      typing();
     }
 
-    async function startDivination(question) {
+    async function startDivination() {
+      const question = document.getElementById("question").value.trim();
+
+      if (!question) {
+        alert("⚠️ 請先輸入問題，才能開始占卜！");
+        return;
+      }
+
+      const apiUrl = "https://script.google.com/macros/s/AKfycbzt4W2qG3Iawd_bLz252jy_8ffNmOLkVvU5T5qUXw_zWkTj8K9a-E6m7FAlZepPlJ7G/exec";
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("d");
+      if (!token) {
+        alert("⚠️ 未偵測到 Token，請從 NFC 鑰匙圈感應進入！");
+        return;
+      }
+
+      const params = new URLSearchParams({ q: question, d: token });
+
       document.getElementById("loading").style.display = "block";
       document.getElementById("output").style.display = "none";
 
       try {
-        const res = await fetch(`${apiUrl}?d=${encodeURIComponent(token)}&q=${encodeURIComponent(question)}`);
+        const res = await fetch(`${apiUrl}?${params.toString()}`);
         const data = await res.json();
 
         document.getElementById("loading").style.display = "none";
         document.getElementById("output").style.display = "block";
 
         if (data.error) {
-          document.getElementById("output").innerHTML = `<p style="color:red;">⚠️ ${data.error}</p>`;
+          document.getElementById("output").innerHTML = `<p style="color:red;">${data.error}</p>`;
           return;
         }
 
         document.getElementById("output").innerHTML = `
-          <h3>📌 問題：</h3>
-          <p>${data.question}</p>
-
-          <h3>🔮 卦象：</h3>
-          <p>第 ${data.gua.g} 卦 - ${data.gua.name}</p>
+          <h3>📜 卦象：${data.gua.name}（動爻：${data.gua.yao}）</h3>
           <p><b>卦辭：</b>${data.gua.guaci}</p>
-          <p><b>${data.gua.yao}：</b>${data.gua.yaoci}</p>
-
-          <h3>✨ AI 解卦：</h3>
-          <p>${data.result}</p>
+          <p><b>爻辭：</b>${data.gua.yaoci}</p>
+          <hr>
+          <h3>🔮 AI 解卦結果</h3>
+          <div id="aiResult" class="typing"></div>
         `;
+
+        // 打字機效果 + 播放音效
+        typeWriter(data.result, document.getElementById("aiResult"), () => {
+          document.getElementById("chimeSound").play();
+        });
+
       } catch (err) {
         document.getElementById("loading").style.display = "none";
         alert("⚠️ 占卜 API 呼叫失敗，請檢查 API URL 或網路。");
-      }
-    }
-
-    function onClickStart() {
-      const question = document.getElementById("question").value || "我是否該展開新事業？";
-      if (!token || !validateToken(token)) {
-        alert("⚠️ Token 格式錯誤或不存在，請確認是否由 NFC 進入。");
-        return;
-      }
-      startDivination(question);
-    }
-
-    // ⚡ 從 URL 讀取 Token（感應 NFC 卡會帶 ?d=xxx）
-    window.onload = function() {
-      const params = new URLSearchParams(window.location.search);
-      token = params.get("d") || "";
-
-      const statusEl = document.getElementById("tokenStatus");
-      if (!token) {
-        statusEl.className = "token-status token-error";
-        statusEl.innerText = "⚠️ 未偵測到 Token，請確認是否由 NFC 感應進入。";
-      } else if (!validateToken(token)) {
-        statusEl.className = "token-status token-error";
-        statusEl.innerText = `⚠️ Token 格式錯誤：${token}`;
-      } else {
-        statusEl.className = "token-status token-ok";
-        statusEl.innerText = `✅ 已偵測到 Token：${token}`;
       }
     }
   </script>
