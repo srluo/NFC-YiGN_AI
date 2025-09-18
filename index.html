@@ -30,6 +30,20 @@
       margin-top: 1rem;
       color: #999;
     }
+    .token-status {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .token-ok {
+      background: #e6f7e6;
+      color: #228b22;
+    }
+    .token-error {
+      background: #ffecec;
+      color: #cc0000;
+    }
     button {
       background: #4a4a9f;
       color: #fff;
@@ -58,12 +72,19 @@
   <br><br>
   <button onclick="onClickStart()">開始占卜</button>
 
+  <div id="tokenStatus" class="token-status"></div>
   <div id="loading" class="loading" style="display:none;">⏳ AI 正在解卦中...</div>
   <div id="output" class="result" style="display:none;"></div>
 
   <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbwL0ZlnBdJ64EQBqdlVFfw7Y0brJ2MZcEw6ITzcpEfix1D433Luenw0-xPXZ6wXOUu0/exec"; // ⚠️換成你的 GAS API URL
     let token = "";
+
+    // ✅ Token 格式驗證 (UID-TF-TS-RANDOM)
+    function validateToken(t) {
+      const regex = /^[0-9A-F]{14}-[A-F0-9]{2}-[0-9A-F]{8}-[0-9A-F]{8,}$/i;
+      return regex.test(t);
+    }
 
     async function startDivination(question) {
       document.getElementById("loading").style.display = "block";
@@ -101,8 +122,8 @@
 
     function onClickStart() {
       const question = document.getElementById("question").value || "我是否該展開新事業？";
-      if (!token) {
-        alert("⚠️ 缺少 Token，請確認是否由 NFC 進入本頁");
+      if (!token || !validateToken(token)) {
+        alert("⚠️ Token 格式錯誤或不存在，請確認是否由 NFC 進入。");
         return;
       }
       startDivination(question);
@@ -112,8 +133,17 @@
     window.onload = function() {
       const params = new URLSearchParams(window.location.search);
       token = params.get("d") || "";
+
+      const statusEl = document.getElementById("tokenStatus");
       if (!token) {
-        alert("⚠️ 未偵測到 Token，請確認是否由 NFC 感應進入。");
+        statusEl.className = "token-status token-error";
+        statusEl.innerText = "⚠️ 未偵測到 Token，請確認是否由 NFC 感應進入。";
+      } else if (!validateToken(token)) {
+        statusEl.className = "token-status token-error";
+        statusEl.innerText = `⚠️ Token 格式錯誤：${token}`;
+      } else {
+        statusEl.className = "token-status token-ok";
+        statusEl.innerText = `✅ 已偵測到 Token：${token}`;
       }
     }
   </script>
