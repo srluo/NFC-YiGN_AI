@@ -187,7 +187,7 @@
         return;
       }
 
-      const apiUrl = "https://script.google.com/macros/s/AKfycbzt4W2qG3Iawd_bLz252jy_8ffNmOLkVvU5T5qUXw_zWkTj8K9a-E6m7FAlZepPlJ7G/exec";
+      const apiUrl = "https://script.google.com/macros/s/AKfycbyNC3y8RKG9NEGKolvVLw-iqOGWQt45ZWjO9rC0nKlXKRYf33xCl4HFbcNwD2PXWJrW/exec";
 
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("d");
@@ -214,6 +214,14 @@
           return;
         }
 
+        // 更新點數 & 有效期
+        if (data.points !== undefined) {
+          document.getElementById("points").innerText = data.points;
+        }
+        if (data.expiredDate) {
+          document.getElementById("expired").innerText = data.expiredDate;
+        }
+        
         document.getElementById("output").innerHTML = `
           <h3>📜 卦象：${data.gua.name}（動爻：${data.gua.yao}）</h3>
           <p><b>卦辭：</b>${data.gua.guaci}</p>
