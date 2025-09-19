@@ -26,6 +26,14 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       text-align: left;
     }
+    .info {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #444;
+      background: #f0f0f8;
+      padding: 0.6rem;
+      border-radius: 6px;
+    }
     .loading {
       margin-top: 1.5rem;
       display: none;
@@ -71,32 +79,12 @@
       font-weight: bold;
       display: none;
     }
-    /* Modal Style */
-    #guideModal {
-      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.5); z-index:1000;
-      justify-content:center; align-items:center;
-    }
-    #guideModal .modal-content {
-      background:#fff; max-width:600px; width:90%;
-      padding:20px; border-radius:10px;
-      box-shadow:0 4px 20px rgba(0,0,0,0.3);
-      text-align:left; line-height:1.6;
-      overflow-y:auto; max-height:80%;
-    }
   </style>
 </head>
 <body>
   <header>🔮 NFC 易經占卜 Demo</header>
 
-  <p>
-    請先輸入問題後，再開始占卜：
-    <br>
-    <a href="javascript:void(0)" onclick="openGuide()" style="color:#4a4a9f;font-weight:bold;">
-      📖 占卜提問指南
-    </a>
-  </p>
-
+  <p>請感應 NFC 鑰匙圈後輸入問題，再開始占卜：</p>
   <input type="text" id="question" placeholder="例如：我該如何規劃接下來三個月的事業發展？" 
          style="width:80%;padding:0.5rem;border-radius:6px;border:1px solid #aaa;" />
   <br><br>
@@ -109,50 +97,6 @@
   <div id="output" class="result" style="display:none;"></div>
   <div id="notice" class="notice">⚠️ 占卜完成，請再次感應 NFC 鑰匙圈才能繼續。</div>
 
-  <!-- Modal -->
-  <div id="guideModal">
-    <div class="modal-content">
-      <h2>📖 占卜提問指南</h2>
-      <p><b>三要：</b> 明確、具體、當下。</p>
-      <ul>
-        <li>👉 問題要清楚簡單，避免含糊。</li>
-        <li>👉 聚焦一件事，避免一次問多件事。</li>
-        <li>👉 問與自己切身相關的事，而非替他人代問。</li>
-      </ul>
-      <p><b>三不要：</b> 不誠、不義、不疑。</p>
-      <ul>
-        <li>👉 心不誠，不要占。</li>
-        <li>👉 涉及不義之事，不要占。</li>
-        <li>👉 問題若充滿懷疑與挑釁，也不要占。</li>
-      </ul>
-      
-      <hr>
-      <p class="good">✅ 好的提問範例：</p>
-      <ul>
-        <li>我該如何規劃接下來三個月的事業發展？</li>
-        <li>這份合作對我的長遠影響是什麼？</li>
-        <li>我在感情中目前的處境代表什麼意義？</li>
-        <li>如何面對最近遇到的財務壓力？</li>
-        <li>如果選擇換工作，未來走向會如何？</li>
-        <li>要不要繼續經營這段友誼，會帶來什麼結果？</li>
-        <li>在創業過程中，我該注意哪些隱藏的挑戰？</li>
-      </ul>
-
-      <p class="bad">❌ 不建議的提問：</p>
-      <ul>
-        <li>對錯式：「這樣做對不對？」</li>
-        <li>絕對式：「我會不會成功？」</li>
-        <li>時間式：「我什麼時候會發財？」</li>
-        <li>幫他人決定：「他是不是喜歡我？」</li>
-      </ul>
-      
-      <p><b>傅佩榮提醒：</b> 占卜結果不是命定，而是一段「運」的啟示；提問者應帶著誠意與敬意，把卦象當作反思與行動的參考。</p>
-      <button onclick="closeGuide()" style="margin-top:10px; padding:6px 14px; background:#4a4a9f; color:#fff; border:none; border-radius:6px; cursor:pointer;">
-        關閉
-      </button>
-    </div>
-  </div>
-
   <script>
     // ⚡ 監聽 Enter 鍵
     document.getElementById("question").addEventListener("keypress", function(e) {
@@ -161,7 +105,7 @@
       }
     });
 
-    // 打字機效果函數
+    // 打字機效果
     function typeWriter(text, element, callback, speed = 40) {
       let i = 0;
       element.innerHTML = "";
@@ -187,8 +131,7 @@
         return;
       }
 
-      const apiUrl = "https://script.google.com/macros/s/AKfycbyNC3y8RKG9NEGKolvVLw-iqOGWQt45ZWjO9rC0nKlXKRYf33xCl4HFbcNwD2PXWJrW/exec";
-
+      const apiUrl = "https://script.google.com/macros/s/AKfycbzL4QLtlNAWGhY-S9gwUoN3S8-meZR2XHwF0h-4So1tCJ2eY6-al9heJVeWkgMeUEP_/exec";
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("d");
       if (!token) {
@@ -221,6 +164,9 @@
           <hr>
           <h3>🔮 AI 解卦結果</h3>
           <div id="aiResult" class="typing"></div>
+          <div class="info">
+            剩餘點數：<b>${data.points}</b> ｜ 有效期限：<b>${data.expiredDate}</b>
+          </div>
         `;
 
         typeWriter(data.result, document.getElementById("aiResult"), () => {
@@ -232,14 +178,6 @@
         document.getElementById("loading").style.display = "none";
         alert("⚠️ 占卜 API 呼叫失敗，請檢查 API URL 或網路。");
       }
-    }
-
-    // Modal 控制
-    function openGuide() {
-      document.getElementById("guideModal").style.display = "flex";
-    }
-    function closeGuide() {
-      document.getElementById("guideModal").style.display = "none";
     }
   </script>
 </body>
