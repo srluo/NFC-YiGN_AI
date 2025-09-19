@@ -79,18 +79,31 @@
       font-weight: bold;
       display: none;
     }
+
     /* Modal Style */
     #guideModal {
       display:none; position:fixed; top:0; left:0; width:100%; height:100%;
       background:rgba(0,0,0,0.5); z-index:1000;
       justify-content:center; align-items:center;
     }
-    #guideModal .modal-content {
-      background:#fff; max-width:600px; width:90%;
+    #guideModal .modal-content.dark {
+      background:#1a1a2e;
+      color:#f0f0f0;
+      border:1px solid #444;
+      max-width:600px; width:90%;
       padding:20px; border-radius:10px;
       box-shadow:0 4px 20px rgba(0,0,0,0.3);
       text-align:left; line-height:1.6;
       overflow-y:auto; max-height:80%;
+    }
+    #guideModal .modal-content.dark h2 {
+      color:#ffd700;
+    }
+    #guideModal .modal-content.dark .good {
+      color:#90ee90;
+    }
+    #guideModal .modal-content.dark .bad {
+      color:#ff7f7f;
     }
   </style>
 </head>
@@ -119,7 +132,7 @@
 
   <!-- Modal -->
   <div id="guideModal">
-    <div class="modal-content">
+    <div class="modal-content dark">
       <h2>📖 占卜提問指南</h2>
 
       <p><b>三要：</b> 明確、具體、當下。</p>
@@ -159,12 +172,12 @@
 
       <hr>
 
-      <p style="color:#444;">
+      <p style="color:#ccc;">
         <b>傅佩榮提醒：</b> 占卜結果不是命定，而是一段「運」的啟示；  
         提問者應帶著誠意與敬意，把卦象當作反思與行動的參考。
       </p>
 
-      <button onclick="closeGuide()" style="margin-top:10px; padding:6px 14px; background:#4a4a9f; color:#fff; border:none; border-radius:6px; cursor:pointer;">
+      <button onclick="closeGuide()" style="margin-top:10px; padding:6px 14px; background:#e6b800; color:#000; border:none; border-radius:6px; cursor:pointer;">
         關閉
       </button>
     </div>
@@ -204,7 +217,7 @@
         return;
       }
 
-      const apiUrl = "https://script.google.com/macros/s/AKfycbw_lBnojihGg4W3zeiZ9WYU1IvSC3Ha_49IJD2XPsMWh5WaR2CaenB9-NQKdVizCMJE/exec"; // ← 換成你的 Apps Script API
+      const apiUrl = "https://script.google.com/macros/s/AKfycbw_lBnojihGg4W3zeiZ9WYU1IvSC3Ha_49IJD2XPsMWh5WaR2CaenB9-NQKdVizCMJE/exec"; // 換成實際 API
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("d");
       if (!token) {
@@ -229,7 +242,7 @@
           document.getElementById("output").innerHTML = `<p style="color:red;">${data.error}</p>`;
           return;
         }
-        
+
         document.getElementById("output").innerHTML = `
           <h3>📜 卦象：${data.gua.name}（動爻：${data.gua.yao}）</h3>
           <p><b>卦辭：</b>${data.gua.guaci}</p>
