@@ -213,14 +213,6 @@
           document.getElementById("output").innerHTML = `<p style="color:red;">${data.error}</p>`;
           return;
         }
-
-        // 更新點數 & 有效期
-        if (data.points !== undefined) {
-          document.getElementById("points").innerText = data.points;
-        }
-        if (data.expiredDate) {
-          document.getElementById("expired").innerText = data.expiredDate;
-        }
         
         document.getElementById("output").innerHTML = `
           <h3>📜 卦象：${data.gua.name}（動爻：${data.gua.yao}）</h3>
