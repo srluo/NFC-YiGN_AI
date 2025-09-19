@@ -54,12 +54,22 @@
       cursor: pointer;
       font-size: 1rem;
     }
-    button:hover {
+    button:hover:enabled {
       background: #373777;
+    }
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
     }
     .typing {
       white-space: pre-wrap;
       line-height: 1.6;
+    }
+    .notice {
+      margin-top: 1rem;
+      color: #cc0000;
+      font-weight: bold;
+      display: none;
     }
   </style>
 </head>
@@ -70,16 +80,14 @@
   <input type="text" id="question" placeholder="例如：我是否該換工作？" 
          style="width:80%;padding:0.5rem;border-radius:6px;border:1px solid #aaa;" />
   <br><br>
-  <button onclick="startDivination()">開始占卜</button>
+  <button id="startBtn" onclick="startDivination()">開始占卜</button>
 
   <div id="loading" class="loading">
     <div class="spinner"></div>
     <div>⏳ AI 正在解卦中...</div>
   </div>
   <div id="output" class="result" style="display:none;"></div>
-
-  <!-- 音效 -->
-  <audio id="chimeSound" src="https://cdn.pixabay.com/download/audio/2021/09/15/audio_bell-6093.mp3?filename=magic-chime-6093.mp3" preload="auto"></audio>
+  <div id="notice" class="notice">⚠️ 占卜完成，請再次感應 NFC 鑰匙圈才能繼續。</div>
 
   <script>
     // ⚡ 監聽 Enter 鍵
@@ -107,6 +115,8 @@
 
     async function startDivination() {
       const question = document.getElementById("question").value.trim();
+      const startBtn = document.getElementById("startBtn");
+      const notice = document.getElementById("notice");
 
       if (!question) {
         alert("⚠️ 請先輸入問題，才能開始占卜！");
@@ -126,6 +136,7 @@
 
       document.getElementById("loading").style.display = "block";
       document.getElementById("output").style.display = "none";
+      notice.style.display = "none";
 
       try {
         const res = await fetch(`${apiUrl}?${params.toString()}`);
@@ -151,6 +162,9 @@
         // 打字機效果 + 播放音效
         typeWriter(data.result, document.getElementById("aiResult"), () => {
           document.getElementById("chimeSound").play();
+          // 禁用按鈕 + 顯示提示
+          startBtn.disabled = true;
+          notice.style.display = "block";
         });
 
       } catch (err) {
