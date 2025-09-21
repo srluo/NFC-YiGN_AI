@@ -54,8 +54,15 @@
          style="width:80%;padding:0.5rem;border-radius:6px;border:1px solid #aaa;" />
 
   <br><br>
+
+  <label>
+    <input type="checkbox" id="withFortune" />
+    🌟 加算今日運勢 <br>（需填寫星座＆血型，並再扣 1 點）
+  </label>
+  
+  <br><br>
   <select id="sign">
-    <option value="">選擇星座（可略）</option>
+    <option value="">選擇星座</option>
     <option>牡羊座</option><option>金牛座</option><option>雙子座</option>
     <option>巨蟹座</option><option>獅子座</option><option>處女座</option>
     <option>天秤座</option><option>天蠍座</option><option>射手座</option>
@@ -63,16 +70,10 @@
   </select>
 
   <select id="blood">
-    <option value="">選擇血型（可略）</option>
+    <option value="">選擇血型</option>
     <option>A</option><option>B</option><option>O</option><option>AB</option>
   </select>
-
-  <br><br>
-  <label>
-    <input type="checkbox" id="withFortune" />
-    🌟 加算今日運勢 <br>（需填寫星座＆血型，並再扣 1 點）
-  </label>
-
+  
   <br><br>
   <button id="startBtn" onclick="startDivination()">開始占卜</button>
 
